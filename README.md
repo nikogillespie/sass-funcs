@@ -16,12 +16,12 @@ npm install sass-funcs
 
 ## Modules
 
-| Module                     | Import path                          | Description                                              |
-| -------------------------- | ------------------------------------ | -------------------------------------------------------- |
-| [`list`](#module-list)     | `sass-funcs/list`     | Functions for creating, transforming, and querying lists |
-| [`meta`](#module-meta)     | `sass-funcs/meta`     | Functions for type inspection and emptiness checking     |
-| [`number`](#module-number) | `sass-funcs/number`   | Functions for unit conversion and numeric operations     |
-| [`string`](#module-string) | `sass-funcs/string`   | Functions for string transformation and parsing          |
+| Module                     | Import path         | Description                                              |
+| -------------------------- | ------------------- | -------------------------------------------------------- |
+| [`list`](#module-list)     | `sass-funcs/list`   | Functions for creating, transforming, and querying lists |
+| [`meta`](#module-meta)     | `sass-funcs/meta`   | Functions for type inspection and emptiness checking     |
+| [`number`](#module-number) | `sass-funcs/number` | Functions for unit conversion and numeric operations     |
+| [`string`](#module-string) | `sass-funcs/string` | Functions for string transformation and parsing          |
 
 ---
 
