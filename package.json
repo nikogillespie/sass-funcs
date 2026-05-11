@@ -1,0 +1,46 @@
+{
+  "name": "sass-funcs",
+  "version": "1.0.0",
+  "description": "A collection of Sass utility functions for lists, strings, numbers, and meta — inspired by familiar JS APIs.",
+  "keywords": [
+    "sass",
+    "scss",
+    "functions",
+    "utilities",
+    "helpers",
+    "list",
+    "string",
+    "number",
+    "meta"
+  ],
+  "homepage": "https://github.com/nicholasgillespie/sass-funcs#readme",
+  "license": "MIT",
+  "author": "Nicholas Gillespie (https://github.com/nicholasgillespie)",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/nicholasgillespie"
+  },
+  "files": [
+    "list.scss",
+    "meta.scss",
+    "number.scss",
+    "string.scss",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicholasgillespie/sass-funcs.git"
+  },
+  "peerDependencies": {
+    "sass": ">=1.33.0",
+    "sass-embedded": ">=1.33.0"
+  },
+  "peerDependenciesMeta": {
+    "sass": {
+      "optional": true
+    },
+    "sass-embedded": {
+      "optional": true
+    }
+  }
+}

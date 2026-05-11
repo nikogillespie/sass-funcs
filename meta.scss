@@ -1,0 +1,72 @@
+@use 'sass:meta';
+@use 'sass:list';
+@use 'sass:map';
+@use './string' as s;
+
+// PUBLIC API ──────────────────────────────────────────────────────────────────
+
+/// Return the Sass type name of $value
+/// @param {*} $value - Any Sass value
+/// @return {String} Type name, e.g. `'number'`, `'string'`, `'map'`, `'list'`
+@function type-of($value) {
+  @return meta.type-of($value);
+}
+
+/// Check whether $value's type is one of the types in $types
+/// @param {*} $value - The value to check
+/// @param {List} $types - Allowed type names to match against
+/// @return {Bool} `true` if $value's type is in $types, `false` otherwise
+@function is-type($value, $types) {
+  @return list.index($types, meta.type-of($value)) != null;
+}
+
+/// Check whether $value is empty — pass $depth > 0 to also inspect nested structures
+/// @param {*} $value - The value to check
+/// @param {Number | Null} $depth [0] - Recursion depth; 0 = shallow only, null = unlimited
+/// @return {Bool} `true` if empty at the given depth, `false` otherwise
+@function is-empty($value, $depth: 0) {
+  @if $depth != null and meta.type-of($depth) != 'number' {
+    @error '$depth: #{meta.inspect($depth)} is not a number or null.';
+  }
+
+  $type: meta.type-of($value);
+
+  // Shallow emptiness — null, blank strings, and zero-length collections
+  @if $value == null {
+    @return true;
+  } @else if $type == 'string' and s.trim($value) == '' {
+    @return true;
+  } @else if list.index(('list', 'arglist'), $type) and list.length($value) == 0 {
+    @return true;
+  } @else if $type == 'map' and list.length(map.keys($value)) == 0 {
+    @return true;
+  }
+
+  // No recursion requested — value passed shallow checks, treat as non-empty
+  @if $depth == 0 {
+    @return false;
+  }
+
+  // Decrement depth for the next level, or carry null for unlimited recursion
+  $next-depth: null;
+  @if $depth != null {
+    $next-depth: $depth - 1;
+  }
+
+  @if list.index(('list', 'arglist'), $type) {
+    // Recurse into list and arglist elements
+    @each $element in $value {
+      @if is-empty($element, $next-depth) {
+        @return true;
+      }
+    }
+  } @else if $type == 'map' {
+    // Recurse into map keys and values
+    @each $k, $v in $value {
+      @if is-empty($k, $next-depth) or is-empty($v, $next-depth) {
+        @return true;
+      }
+    }
+  }
+  @return false;
+}

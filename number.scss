@@ -1,0 +1,159 @@
+@use 'sass:meta';
+@use 'sass:math';
+@use 'sass:map';
+
+// CONFIG ──────────────────────────────────────────────────────────────────────
+
+// Pixel equivalents for each supported CSS length unit (used as conversion pivot)
+$_LENGTH_UNIT_PX_RATIOS: (
+  'px': 1,
+  'rem': 16,
+  'em': 16,
+  'cm': math.div(96, 2.54),
+  'mm': math.div(96, 25.4),
+  'Q': math.div(96, 101.6),
+  'in': 96,
+  'pc': math.div(96, 6),
+  'pt': math.div(96, 72),
+);
+
+// DERIVED ─────────────────────────────────────────────────────────────────────
+
+// Expose supported units publicly
+$SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
+
+// PUBLIC API ──────────────────────────────────────────────────────────────────
+
+/// Attach a CSS length unit to a unitless number
+/// @param {Number} $number - A unitless number
+/// @param {String} $unit - Target unit; see `$SUPPORTED_LENGTH_UNITS`
+/// @return {Number} Number with the specified unit attached
+@function add-unit($number, $unit) {
+  @if meta.type-of($number) != 'number' {
+    @error '$number: #{meta.inspect($number)} is not a number.';
+  } @else if meta.type-of($unit) != 'string' {
+    @error '$unit: #{meta.inspect($unit)} is not a string.';
+  } @else if not math.is-unitless($number) {
+    @error '$number: #{meta.inspect($number)} is not a unitless number.';
+  } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $unit) {
+    @error '$unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
+  }
+
+  @if $unit == 'px' {
+    @return $number * 1px;
+  } @else if $unit == 'rem' {
+    @return $number * 1rem;
+  } @else if $unit == 'em' {
+    @return $number * 1em;
+  } @else if $unit == 'cm' {
+    @return $number * 1cm;
+  } @else if $unit == 'mm' {
+    @return $number * 1mm;
+  } @else if $unit == 'Q' {
+    @return $number * 1Q;
+  } @else if $unit == 'in' {
+    @return $number * 1in;
+  } @else if $unit == 'pc' {
+    @return $number * 1pc;
+  } @else if $unit == 'pt' {
+    @return $number * 1pt;
+  }
+}
+
+/// Convert a number from one CSS length unit to another
+/// @param {Number} $number - Unitless number, or a number whose unit matches $from-unit
+/// @param {String} $from-unit - Source unit; see `$SUPPORTED_LENGTH_UNITS`
+/// @param {String} $to-unit - Target unit; see `$SUPPORTED_LENGTH_UNITS`
+/// @return {Number} Converted number with the target unit attached
+@function convert-unit($number, $from-unit, $to-unit) {
+  @if meta.type-of($number) != 'number' {
+    @error '$number: #{meta.inspect($number)} is not a number.';
+  } @else if meta.type-of($from-unit) != 'string' {
+    @error '$from-unit: #{meta.inspect($from-unit)} is not a string.';
+  } @else if meta.type-of($to-unit) != 'string' {
+    @error '$to-unit: #{meta.inspect($to-unit)} is not a string.';
+  } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $from-unit) {
+    @error '$from-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
+  } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $to-unit) {
+    @error '$to-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
+  } @else if not math.is-unitless($number) and math.unit($number) != $from-unit {
+    @error '$number: Must be unitless or use unit "#{$from-unit}".';
+  }
+
+  @if $from-unit == $to-unit {
+    @return $number;
+  }
+
+  $n: math.div($number, $number * 0 + 1); // strip unit
+  $result: math.div(
+    $n * map.get($_LENGTH_UNIT_PX_RATIOS, $from-unit),
+    map.get($_LENGTH_UNIT_PX_RATIOS, $to-unit)
+  );
+
+  @if $to-unit == 'px' {
+    @return $result * 1px;
+  } @else if $to-unit == 'rem' {
+    @return $result * 1rem;
+  } @else if $to-unit == 'em' {
+    @return $result * 1em;
+  } @else if $to-unit == 'cm' {
+    @return $result * 1cm;
+  } @else if $to-unit == 'mm' {
+    @return $result * 1mm;
+  } @else if $to-unit == 'Q' {
+    @return $result * 1Q;
+  } @else if $to-unit == 'in' {
+    @return $result * 1in;
+  } @else if $to-unit == 'pc' {
+    @return $result * 1pc;
+  } @else if $to-unit == 'pt' {
+    @return $result * 1pt;
+  }
+}
+
+/// Resolve a relative index (positive or negative) to a valid 1-based index
+/// @param {Number} $index - Positive or negative integer index
+/// @param {Number} $length - Length of the collection
+/// @return {Number | Null} 1-based index, or `null` if out of bounds
+@function resolve-index($index, $length) {
+  @if meta.type-of($index) != 'number' {
+    @error '$index: #{meta.inspect($index)} is not a number.';
+  } @else if meta.type-of($length) != 'number' {
+    @error '$length: #{meta.inspect($length)} is not a number.';
+  }
+
+  // Snap fractional inputs to the nearest whole position
+  $index: math.round($index);
+
+  // Translate negative indices from the end of the range
+  @if $index < 0 {
+    $index: $length + $index + 1;
+  }
+
+  // Signal out-of-bounds by returning null rather than throwing
+  @if $index < 1 or $index > $length {
+    @return null;
+  } @else {
+    @return $index;
+  }
+}
+
+/// Round a number to a fixed number of decimal places
+/// @param {Number} $number - Number to round
+/// @param {Number} $digits [0] - Decimal places to keep (>= 0); fractional values are floored
+/// @return {Number} Rounded number
+@function to-fixed($number, $digits: 0) {
+  @if meta.type-of($number) != 'number' {
+    @error '$number: #{meta.inspect($number)} is not a number.';
+  } @else if meta.type-of($digits) != 'number' {
+    @error '$digits: #{meta.inspect($digits)} is not a number.';
+  } @else if not math.is-unitless($digits) {
+    @error '$digits: #{meta.inspect($digits)} is not a unitless number.';
+  } @else if $digits < 0 {
+    @error '$digits: Must be 0 or greater.';
+  }
+
+  $digits: math.floor($digits);
+  $factor: math.pow(10, $digits);
+  @return math.div(math.round($number * $factor), $factor);
+}

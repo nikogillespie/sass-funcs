@@ -1,0 +1,145 @@
+@use 'sass:meta';
+@use 'sass:string';
+@use 'sass:list';
+
+// PUBLIC API ──────────────────────────────────────────────────────────────────
+
+/// Capitalize first letter of $string and lowercase the remainder
+/// @param {String} $string - Input string
+/// @return {String} Capitalized string
+@function capitalize($string) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  }
+  $string: trim($string);
+  @if string.length($string) == 0 {
+    @return '';
+  }
+  $first: string.slice($string, 1, 1);
+  $rest: string.slice($string, 2);
+  @return string.to-upper-case($first) + string.to-lower-case($rest);
+}
+
+/// Replace all occurrences of $pattern with $replacement in $string
+/// @param {String} $string - Input string
+/// @param {String} $pattern - Substring to find
+/// @param {String} $replacement [''] - Replacement string
+/// @return {String} String with all $pattern occurrences replaced
+@function replace-all($string, $pattern, $replacement: '') {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  } @else if meta.type-of($pattern) != 'string' {
+    @error '$pattern: #{meta.inspect($pattern)} is not a string.';
+  } @else if meta.type-of($replacement) != 'string' {
+    @error '$replacement: #{meta.inspect($replacement)} is not a string.';
+  }
+
+  // Empty pattern would cause infinite recursion — return early
+  @if $pattern == '' {
+    @return $string;
+  }
+
+  $index: string.index($string, $pattern);
+  @if $index {
+    @return string.slice($string, 1, $index - 1) + $replacement +
+      replace-all(string.slice($string, $index + string.length($pattern)), $pattern, $replacement);
+  }
+  @return $string;
+}
+
+/// Convert $string to URL-safe slug format (lowercase, hyphens, no special chars)
+/// @param {String} $string - Input string
+/// @return {String} URL-safe slug
+@function slugify($string) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  }
+
+  $lower: string.to-lower-case($string);
+  $result: '';
+  $disallowed-characters: '\'"!@#$%^&*()+=[]{}|;:,.<>?/`~';
+
+  // Walk each character, keeping only allowed ones
+  @for $i from 1 through string.length($lower) {
+    $character: string.slice($lower, $i, $i);
+    @if not string.index($disallowed-characters, $character) {
+      $result: $result + $character;
+    }
+  }
+
+  @return replace-all(trim($result), ' ', '-');
+}
+
+/// Split $string into a list using $separator
+/// @param {String} $string - Input string
+/// @param {String | Null} $separator [null] - Delimiter; '' splits per char, null wraps in a list
+/// @return {List} List of string segments
+@function split($string, $separator: null) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  }
+
+  // Null separator — return the string wrapped in a single-element list
+  @if $separator == null {
+    @return list.append((), $string, space);
+  }
+  @if meta.type-of($separator) != 'string' {
+    @error '$separator: #{meta.inspect($separator)} is not a string or null.';
+  }
+
+  $result: ();
+
+  // Empty separator — split into individual characters
+  @if $separator == '' {
+    @for $i from 1 through string.length($string) {
+      $result: list.append($result, string.slice($string, $i, $i), comma);
+    }
+    @return $result;
+  }
+
+  $sep-length: string.length($separator);
+  $index: string.index($string, $separator);
+
+  // Iteratively slice at each separator match, accumulating parts
+  @while $index {
+    $part: string.slice($string, 1, $index - 1);
+    $result: list.append($result, $part, comma);
+    $string: string.slice($string, $index + $sep-length);
+    $index: string.index($string, $separator);
+  }
+
+  @return list.append($result, $string, comma);
+}
+
+/// Remove leading and trailing whitespace from $string
+/// @param {String} $string - Input string
+/// @return {String} Trimmed string
+@function trim($string) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  }
+
+  $start: 1;
+  $end: string.length($string);
+  @while $start <= $end and string.slice($string, $start, $start) == ' ' {
+    $start: $start + 1;
+  }
+  @while $end >= $start and string.slice($string, $end, $end) == ' ' {
+    $end: $end - 1;
+  }
+  @return string.slice($string, $start, $end);
+}
+
+/// Convert $string to UPPER_SNAKE_CASE by replacing hyphens and spaces with underscores
+/// @param {String} $string - Input string
+/// @return {String} UPPER_SNAKE_CASE string
+@function upper-snake-case($string) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  }
+
+  $string: trim($string);
+  $result: replace-all($string, '-', '_');
+  $result: replace-all($result, ' ', '_');
+  @return string.to-upper-case($result);
+}
