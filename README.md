@@ -10,14 +10,14 @@ A collection of Sass utility functions for [lists](#module-list), [strings](#mod
 npm install sass-funcs
 ```
 
-> Requires `sass >= 1.33.0` or `sass-embedded >= 1.33.0` — install one, not both. `sass-embedded` is recommended: it wraps a native Dart binary and is typically 20–30% faster to compile than the pure-JS `sass` package.
+> Requires [`sass`](https://www.npmjs.com/package/sass) `>= 1.33.0` or [`sass-embedded`](https://www.npmjs.com/package/sass-embedded) `>= 1.33.0` — install one, not both. `sass-embedded` is recommended: it wraps a native Dart binary and is typically 20–30% faster to compile than the pure-JS `sass` package.
 
 ---
 
 ## Modules
 
-| Module                     | Import path                         | Description                                              |
-| -------------------------- | ----------------------------------- | -------------------------------------------------------- |
+| Module                     | Import path                          | Description                                              |
+| -------------------------- | ------------------------------------ | -------------------------------------------------------- |
 | [`list`](#module-list)     | [`sass-funcs/list`](./list.scss)     | Functions for creating, transforming, and querying lists |
 | [`meta`](#module-meta)     | [`sass-funcs/meta`](./meta.scss)     | Functions for type inspection and emptiness checking     |
 | [`number`](#module-number) | [`sass-funcs/number`](./number.scss) | Functions for unit conversion and numeric operations     |
