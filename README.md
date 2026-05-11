@@ -18,14 +18,14 @@ npm install sass-funcs
 
 | Module                     | Import path                          | Description                                              |
 | -------------------------- | ------------------------------------ | -------------------------------------------------------- |
-| [`list`](#module-list)     | [`sass-funcs/list`](./list.scss)     | Functions for creating, transforming, and querying lists |
-| [`meta`](#module-meta)     | [`sass-funcs/meta`](./meta.scss)     | Functions for type inspection and emptiness checking     |
-| [`number`](#module-number) | [`sass-funcs/number`](./number.scss) | Functions for unit conversion and numeric operations     |
-| [`string`](#module-string) | [`sass-funcs/string`](./string.scss) | Functions for string transformation and parsing          |
+| [`list`](#module-list)     | `sass-funcs/list`     | Functions for creating, transforming, and querying lists |
+| [`meta`](#module-meta)     | `sass-funcs/meta`     | Functions for type inspection and emptiness checking     |
+| [`number`](#module-number) | `sass-funcs/number`   | Functions for unit conversion and numeric operations     |
+| [`string`](#module-string) | `sass-funcs/string`   | Functions for string transformation and parsing          |
 
 ---
 
-## Module: List
+## [Module: List](./list.scss)
 
 ```scss
 @use 'sass-funcs/list' as l;
@@ -104,7 +104,7 @@ l.sort((3, 1, 2))               // → 1, 2, 3
 
 ---
 
-## Module: Meta
+## [Module: Meta](./meta.scss)
 
 ```scss
 @use 'sass-funcs/meta' as m;
@@ -147,7 +147,7 @@ m.type-of((a: 1))      // → 'map'
 
 ---
 
-## Module: Number
+## [Module: Number](./number.scss)
 
 ```scss
 @use 'sass-funcs/number' as n;
@@ -203,7 +203,7 @@ n.to-fixed(1.5)           // → 2
 
 ---
 
-## Module: String
+## [Module: String](./string.scss)
 
 ```scss
 @use 'sass-funcs/string' as s;
