@@ -10,7 +10,7 @@ Sass utility functions for [lists](#module-list), [strings](#module-string), [nu
 npm install sass-funcs
 ```
 
-> Requires [`sass`](https://www.npmjs.com/package/sass) `>= 1.33.0` or [`sass-embedded`](https://www.npmjs.com/package/sass-embedded) `>= 1.33.0` — install one, not both. `sass-embedded` is recommended: it wraps a native Dart binary and is typically 20–30% faster to compile than the pure-JS `sass` package.
+> Requires [`sass`](https://www.npmjs.com/package/sass) or [`sass-embedded`](https://www.npmjs.com/package/sass-embedded) `>= 1.33.0` — install one, not both (`sass-embedded` recommended).
 
 ---
 
