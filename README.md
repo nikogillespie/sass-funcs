@@ -1,6 +1,6 @@
 # sass-funcs
 
-Sass utility functions for [lists](#module-list), [strings](#module-string), [numbers](#module-number), and [meta](#module-meta) — inspired by familiar JS APIs. Where behaviour differs from a JS counterpart, the difference is noted. Uses only Sass built-in modules.
+Sass utility functions for [lists](#module-list), [strings](#module-string), [numbers](#module-number), and [meta](#module-meta) — inspired by familiar JS APIs.
 
 ---
 
