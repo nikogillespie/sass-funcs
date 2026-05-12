@@ -267,4 +267,6 @@ s.upper-snake-case('font-size')    // → 'FONT_SIZE'
 s.upper-snake-case('my variable')  // → 'MY_VARIABLE'
 ```
 
+---
+
 [Back to top](#sass-funcs)
