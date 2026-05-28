@@ -7,7 +7,7 @@ Sass utility functions for [lists](#module-list), [strings](#module-string), [nu
 ## Installation
 
 ```sh
-npm install sass-funcs
+npm install --save-dev sass-funcs
 ```
 
 > Requires [`sass`](https://www.npmjs.com/package/sass) or [`sass-embedded`](https://www.npmjs.com/package/sass-embedded) `>= 1.33.0` — install one, not both (`sass-embedded` recommended).

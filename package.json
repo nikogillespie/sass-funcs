@@ -13,12 +13,12 @@
     "number",
     "meta"
   ],
-  "homepage": "https://github.com/nicholasgillespie/sass-funcs#readme",
+  "homepage": "https://github.com/nikogillespie/sass-funcs#readme",
   "license": "MIT",
-  "author": "Nicholas Gillespie (https://github.com/nicholasgillespie)",
+  "author": "Nicholas Gillespie (https://github.com/nikogillespie)",
   "funding": {
     "type": "github",
-    "url": "https://github.com/sponsors/nicholasgillespie"
+    "url": "https://github.com/sponsors/nikogillespie"
   },
   "files": [
     "list.scss",
@@ -29,7 +29,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nicholasgillespie/sass-funcs.git"
+    "url": "git+https://github.com/nikogillespie/sass-funcs.git"
   },
   "peerDependencies": {
     "sass": ">=1.33.0",
