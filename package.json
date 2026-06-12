@@ -1,6 +1,6 @@
 {
   "name": "sass-funcs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Sass utility functions for lists, strings, numbers, and meta — inspired by familiar JS APIs",
   "keywords": [
     "sass",
