@@ -2,9 +2,9 @@
 @use 'sass:math';
 @use 'sass:map';
 
-// CONFIG ──────────────────────────────────────────────────────────────────────
+// CONFIG ──────────────────────────────────────────────────
 
-// Pixel equivalents for each supported CSS length unit (used as conversion pivot)
+// Pixel ratios per supported length unit — conversion pivot
 $_LENGTH_UNIT_PX_RATIOS: (
   'px': 1,
   'rem': 16,
@@ -17,15 +17,29 @@ $_LENGTH_UNIT_PX_RATIOS: (
   'pt': math.div(96, 72),
 );
 
-// DERIVED ─────────────────────────────────────────────────────────────────────
+// Unit factors for attaching units by multiplication
+// Keys must mirror $_LENGTH_UNIT_PX_RATIOS
+$_LENGTH_UNIT_FACTORS: (
+  'px': 1px,
+  'rem': 1rem,
+  'em': 1em,
+  'cm': 1cm,
+  'mm': 1mm,
+  'Q': 1Q,
+  'in': 1in,
+  'pc': 1pc,
+  'pt': 1pt,
+);
+
+// DERIVED ─────────────────────────────────────────────────
 
 // Expose supported units publicly
 $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
 
-// PUBLIC API ──────────────────────────────────────────────────────────────────
+// PUBLIC API ──────────────────────────────────────────────
 
-/// Attach a CSS length unit to a unitless number
-/// @param {Number} $number - A unitless number
+/// Attach a CSS length unit to $number
+/// @param {Number} $number - Unitless number
 /// @param {String} $unit - Target unit; see `$SUPPORTED_LENGTH_UNITS`
 /// @return {Number} Number with the specified unit attached
 @function add-unit($number, $unit) {
@@ -39,28 +53,10 @@ $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @error '$unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
   }
 
-  @if $unit == 'px' {
-    @return $number * 1px;
-  } @else if $unit == 'rem' {
-    @return $number * 1rem;
-  } @else if $unit == 'em' {
-    @return $number * 1em;
-  } @else if $unit == 'cm' {
-    @return $number * 1cm;
-  } @else if $unit == 'mm' {
-    @return $number * 1mm;
-  } @else if $unit == 'Q' {
-    @return $number * 1Q;
-  } @else if $unit == 'in' {
-    @return $number * 1in;
-  } @else if $unit == 'pc' {
-    @return $number * 1pc;
-  } @else if $unit == 'pt' {
-    @return $number * 1pt;
-  }
+  @return $number * map.get($_LENGTH_UNIT_FACTORS, $unit);
 }
 
-/// Convert a number from one CSS length unit to another
+/// Convert $number from one CSS length unit to another
 /// @param {Number} $number - Unitless number, or a number whose unit matches $from-unit
 /// @param {String} $from-unit - Source unit; see `$SUPPORTED_LENGTH_UNITS`
 /// @param {String} $to-unit - Target unit; see `$SUPPORTED_LENGTH_UNITS`
@@ -76,7 +72,8 @@ $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @error '$from-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
   } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $to-unit) {
     @error '$to-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
-  } @else if not math.is-unitless($number) and math.unit($number) != $from-unit {
+  } @else if not math.is-unitless($number) and math.unit($number) != $from-unit
+  {
     @error '$number: Must be unitless or use unit "#{$from-unit}".';
   }
 
@@ -84,34 +81,16 @@ $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @return $number;
   }
 
-  $n: math.div($number, $number * 0 + 1); // strip unit
+  $n: math.div($number, $number * 0 + 1); // Strip unit
   $result: math.div(
     $n * map.get($_LENGTH_UNIT_PX_RATIOS, $from-unit),
     map.get($_LENGTH_UNIT_PX_RATIOS, $to-unit)
   );
 
-  @if $to-unit == 'px' {
-    @return $result * 1px;
-  } @else if $to-unit == 'rem' {
-    @return $result * 1rem;
-  } @else if $to-unit == 'em' {
-    @return $result * 1em;
-  } @else if $to-unit == 'cm' {
-    @return $result * 1cm;
-  } @else if $to-unit == 'mm' {
-    @return $result * 1mm;
-  } @else if $to-unit == 'Q' {
-    @return $result * 1Q;
-  } @else if $to-unit == 'in' {
-    @return $result * 1in;
-  } @else if $to-unit == 'pc' {
-    @return $result * 1pc;
-  } @else if $to-unit == 'pt' {
-    @return $result * 1pt;
-  }
+  @return $result * map.get($_LENGTH_UNIT_FACTORS, $to-unit);
 }
 
-/// Resolve a relative index (positive or negative) to a valid 1-based index
+/// Resolve a relative $index (positive or negative) to a valid 1-based index
 /// @param {Number} $index - Positive or negative integer index
 /// @param {Number} $length - Length of the collection
 /// @return {Number | Null} 1-based index, or `null` if out of bounds
@@ -130,7 +109,7 @@ $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     $index: $length + $index + 1;
   }
 
-  // Signal out-of-bounds by returning null rather than throwing
+  // Signal out-of-bounds with null rather than throwing
   @if $index < 1 or $index > $length {
     @return null;
   } @else {
@@ -138,7 +117,7 @@ $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
   }
 }
 
-/// Round a number to a fixed number of decimal places
+/// Round $number to a fixed number of decimal places
 /// @param {Number} $number - Number to round
 /// @param {Number} $digits [0] - Decimal places to keep (>= 0); fractional values are floored
 /// @return {Number} Rounded number

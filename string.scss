@@ -2,7 +2,7 @@
 @use 'sass:string';
 @use 'sass:list';
 
-// PUBLIC API ──────────────────────────────────────────────────────────────────
+// PUBLIC API ──────────────────────────────────────────────
 
 /// Capitalize first letter of $string and lowercase the remainder
 /// @param {String} $string - Input string
@@ -34,7 +34,7 @@
     @error '$replacement: #{meta.inspect($replacement)} is not a string.';
   }
 
-  // Empty pattern would cause infinite recursion — return early
+  // Guard empty pattern — would recurse infinitely
   @if $pattern == '' {
     @return $string;
   }
@@ -42,7 +42,11 @@
   $index: string.index($string, $pattern);
   @if $index {
     @return string.slice($string, 1, $index - 1) + $replacement +
-      replace-all(string.slice($string, $index + string.length($pattern)), $pattern, $replacement);
+      replace-all(
+        string.slice($string, $index + string.length($pattern)),
+        $pattern,
+        $replacement
+      );
   }
   @return $string;
 }
@@ -59,7 +63,7 @@
   $result: '';
   $disallowed-characters: '\'"!@#$%^&*()+=[]{}|;:,.<>?/`~';
 
-  // Walk each character, keeping only allowed ones
+  // Keep only allowed characters
   @for $i from 1 through string.length($lower) {
     $character: string.slice($lower, $i, $i);
     @if not string.index($disallowed-characters, $character) {
@@ -72,14 +76,14 @@
 
 /// Split $string into a list using $separator
 /// @param {String} $string - Input string
-/// @param {String | Null} $separator [null] - Delimiter; '' splits per char, null wraps in a list
+/// @param {String | Null} $separator [null] - Separator; '' splits per char, null wraps in a list
 /// @return {List} List of string segments
 @function split($string, $separator: null) {
   @if meta.type-of($string) != 'string' {
     @error '$string: #{meta.inspect($string)} is not a string.';
   }
 
-  // Null separator — return the string wrapped in a single-element list
+  // Wrap string in a single-element list
   @if $separator == null {
     @return list.append((), $string, space);
   }
@@ -89,7 +93,7 @@
 
   $result: ();
 
-  // Empty separator — split into individual characters
+  // Split into individual characters
   @if $separator == '' {
     @for $i from 1 through string.length($string) {
       $result: list.append($result, string.slice($string, $i, $i), comma);
@@ -100,7 +104,7 @@
   $sep-length: string.length($separator);
   $index: string.index($string, $separator);
 
-  // Iteratively slice at each separator match, accumulating parts
+  // Slice at each separator match
   @while $index {
     $part: string.slice($string, 1, $index - 1);
     $result: list.append($result, $part, comma);
@@ -119,8 +123,19 @@
     @error '$string: #{meta.inspect($string)} is not a string.';
   }
 
-  $start: 1;
   $end: string.length($string);
+
+  // Return early — nothing to trim
+  @if $end == 0 {
+    @return $string;
+  } @else if
+    (string.slice($string, 1, 1) != ' ') and
+    (string.slice($string, $end, $end) != ' ')
+  {
+    @return $string;
+  }
+
+  $start: 1;
   @while $start <= $end and string.slice($string, $start, $start) == ' ' {
     $start: $start + 1;
   }

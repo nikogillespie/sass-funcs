@@ -3,7 +3,7 @@
 @use 'sass:map';
 @use './string' as s;
 
-// PUBLIC API ──────────────────────────────────────────────────────────────────
+// PUBLIC API ──────────────────────────────────────────────
 
 /// Return the Sass type name of $value
 /// @param {*} $value - Any Sass value
@@ -13,7 +13,7 @@
 }
 
 /// Check whether $value's type is one of the types in $types
-/// @param {*} $value - The value to check
+/// @param {*} $value - Value to check
 /// @param {List} $types - Allowed type names to match against
 /// @return {Bool} `true` if $value's type is in $types, `false` otherwise
 @function is-type($value, $types) {
@@ -21,7 +21,7 @@
 }
 
 /// Check whether $value is empty — pass $depth > 0 to also inspect nested structures
-/// @param {*} $value - The value to check
+/// @param {*} $value - Value to check
 /// @param {Number | Null} $depth [0] - Recursion depth; 0 = shallow only, null = unlimited
 /// @return {Bool} `true` if empty at the given depth, `false` otherwise
 @function is-empty($value, $depth: 0) {
@@ -31,23 +31,24 @@
 
   $type: meta.type-of($value);
 
-  // Shallow emptiness — null, blank strings, and zero-length collections
+  // Check shallow emptiness
   @if $value == null {
     @return true;
   } @else if $type == 'string' and s.trim($value) == '' {
     @return true;
-  } @else if list.index(('list', 'arglist'), $type) and list.length($value) == 0 {
+  } @else if list.index(('list', 'arglist'), $type) and list.length($value) == 0
+  {
     @return true;
   } @else if $type == 'map' and list.length(map.keys($value)) == 0 {
     @return true;
   }
 
-  // No recursion requested — value passed shallow checks, treat as non-empty
+  // Stop at depth 0 — value passed shallow checks
   @if $depth == 0 {
     @return false;
   }
 
-  // Decrement depth for the next level, or carry null for unlimited recursion
+  // Decrement depth — null carries unlimited recursion
   $next-depth: null;
   @if $depth != null {
     $next-depth: $depth - 1;
