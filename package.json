@@ -1,6 +1,6 @@
 {
   "name": "sass-funcs",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Sass utility functions for lists, strings, numbers, and meta — inspired by familiar JS APIs",
   "keywords": [
     "sass",
@@ -32,8 +32,8 @@
     "url": "git+https://github.com/nikogillespie/sass-funcs.git"
   },
   "peerDependencies": {
-    "sass": ">=1.33.0",
-    "sass-embedded": ">=1.33.0"
+    "sass": ">=1.45.0",
+    "sass-embedded": ">=1.45.0"
   },
   "peerDependenciesMeta": {
     "sass": {

@@ -2,6 +2,11 @@
 @use 'sass:string';
 @use 'sass:list';
 
+// CONFIG ──────────────────────────────────────────────────
+
+// Sanitize disallowed characters
+$DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
+
 // PUBLIC API ──────────────────────────────────────────────
 
 /// Capitalize first letter of $string and lowercase the remainder
@@ -51,21 +56,30 @@
   @return $string;
 }
 
-/// Convert $string to URL-safe slug format (lowercase, hyphens, no special chars)
+/// Remove $disallowed-characters from $string, trim it and replace spaces with hyphens
 /// @param {String} $string - Input string
-/// @return {String} URL-safe slug
-@function slugify($string) {
+/// @param {Bool} $lowercase [false] - Lowercase $string before filtering when `true`
+/// @param {String} $disallowed-characters [$DISALLOWED_CHARACTERS] - Characters to remove
+/// @return {String} Sanitized string
+@function sanitize(
+  $string,
+  $lowercase: false,
+  $disallowed-characters: $DISALLOWED_CHARACTERS
+) {
   @if meta.type-of($string) != 'string' {
     @error '$string: #{meta.inspect($string)} is not a string.';
+  } @else if meta.type-of($lowercase) != 'bool' {
+    @error '$lowercase: #{meta.inspect($lowercase)} is not a bool.';
+  } @else if meta.type-of($disallowed-characters) != 'string' {
+    @error '$disallowed-characters: #{meta.inspect($disallowed-characters)} is not a string.';
   }
 
-  $lower: string.to-lower-case($string);
+  $string: $lowercase and string.to-lower-case($string) or $string;
   $result: '';
-  $disallowed-characters: '\'"!@#$%^&*()+=[]{}|;:,.<>?/`~';
 
   // Keep only allowed characters
-  @for $i from 1 through string.length($lower) {
-    $character: string.slice($lower, $i, $i);
+  @for $i from 1 through string.length($string) {
+    $character: string.slice($string, $i, $i);
     @if not string.index($disallowed-characters, $character) {
       $result: $result + $character;
     }

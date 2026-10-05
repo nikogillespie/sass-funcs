@@ -10,7 +10,25 @@ Sass utility functions for [lists](#module-list), [strings](#module-string), [nu
 npm install sass-funcs
 ```
 
-> Requires [`sass`](https://www.npmjs.com/package/sass) or [`sass-embedded`](https://www.npmjs.com/package/sass-embedded) `>= 1.33.0` — install one, not both (`sass-embedded` recommended).
+> Requires [`sass`](https://www.npmjs.com/package/sass) or [`sass-embedded`](https://www.npmjs.com/package/sass-embedded) `>= 1.45.0` — install one, not both (`sass-embedded` recommended).
+
+---
+
+## Configuration
+
+All constants are configurable via `@use ... with (...)`:
+
+```scss
+@use 'sass-funcs/string' as s with (
+  $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~_'
+);
+```
+
+| Variable                 | Module   | Default                                   | Description                        |
+| ------------------------ | -------- | ----------------------------------------- | ---------------------------------- |
+| `$DISALLOWED_CHARACTERS` | `string` | `` '!"#$%&\'()*+,./:;<=>?@[\\]^`{\|}~' `` | Characters removed by `sanitize()` |
+
+> **Note:** A module can only be configured on its first load. Packages such as [`sass-error`](https://www.npmjs.com/package/sass-error) and [`sass-valid`](https://www.npmjs.com/package/sass-valid) load `sass-funcs/string` themselves, so place your `@use ... with (...)` before them.
 
 ---
 
@@ -229,13 +247,14 @@ s.replace-all('foo bar foo', 'foo', 'baz')   // → 'baz bar baz'
 s.replace-all('a--b--c', '--')               // → 'abc'
 ```
 
-### `slugify($string)`
+### `sanitize($string, $lowercase: false, $disallowed-characters: $DISALLOWED_CHARACTERS)`
 
-Converts a string to a URL-safe slug: lowercased, spaces replaced with hyphens, special characters removed. Similar to `_.kebabCase(string)` (lodash) — with stricter special-character removal.
+Removes `$disallowed-characters`, trims the result, and replaces spaces with hyphens. Lowercases first when `$lowercase` is `true`.
 
 ```scss
-s.slugify('Hello World!')     // → 'hello-world'
-s.slugify('Font Size (lg)')   // → 'font-size-lg'
+s.sanitize('Hello World!')                          // → 'Hello-World'
+s.sanitize('Font Size (lg)', $lowercase: true)      // → 'font-size-lg'
+s.sanitize('a_b c', $disallowed-characters: '_')    // → 'ab-c'
 ```
 
 ### `split($string, $separator: null)`
@@ -245,7 +264,7 @@ Splits a string into a list using `$separator`. An empty string splits into indi
 ```scss
 s.split('a,b,c', ',')   // → a, b, c
 s.split('abc', '')       // → a, b, c
-s.split('abc')           // → 'abc'
+s.split('abc')           // → 'abc'  (single-element list)
 ```
 
 ### `trim($string)`
@@ -266,6 +285,16 @@ Converts a string to `UPPER_SNAKE_CASE` by replacing hyphens and spaces with und
 s.upper-snake-case('font-size')    // → 'FONT_SIZE'
 s.upper-snake-case('my variable')  // → 'MY_VARIABLE'
 ```
+
+---
+
+## Migration
+
+### v1 → v2
+
+- Minimum `sass` / `sass-embedded` version raised from `1.33.0` to `1.45.0`
+- `slugify()` removed — use `sanitize($string, $lowercase: true)`, which also removes backslashes
+- `sort()` now preserves the input list's separator (previously returned a space-separated list for 2+ items)
 
 ---
 

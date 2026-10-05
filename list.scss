@@ -236,6 +236,7 @@
   // Recurse on each partition, then join
   @return list.join(
     list.join(sort($less, $desc), $equal),
-    sort($greater, $desc)
+    sort($greater, $desc),
+    list.separator($list)
   );
 }
