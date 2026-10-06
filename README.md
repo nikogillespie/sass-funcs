@@ -26,7 +26,7 @@ All constants are configurable via `@use ... with (...)`:
 
 | Variable                 | Module   | Default                                   | Description                        |
 | ------------------------ | -------- | ----------------------------------------- | ---------------------------------- |
-| `$DISALLOWED_CHARACTERS` | `string` | `` '!"#$%&\'()*+,./:;<=>?@[\\]^`{\|}~' `` | Characters removed by `sanitize()` |
+| `$DISALLOWED_CHARACTERS` | `string` | `` '!"#$%&\'()*+,./:;<=>?@[\\]^`{\|}~' `` | Characters escaped by `to-ident()` |
 
 > **Note:** A module can only be configured on its first load. Packages such as [`sass-error`](https://www.npmjs.com/package/sass-error) and [`sass-valid`](https://www.npmjs.com/package/sass-valid) load `sass-funcs/string` themselves, so place your `@use ... with (...)` before them.
 
@@ -247,14 +247,14 @@ s.replace-all('foo bar foo', 'foo', 'baz')   // → 'baz bar baz'
 s.replace-all('a--b--c', '--')               // → 'abc'
 ```
 
-### `sanitize($string, $lowercase: false, $disallowed-characters: $DISALLOWED_CHARACTERS)`
+### `to-ident($string, $lowercase: false, $disallowed-characters: $DISALLOWED_CHARACTERS)`
 
-Removes `$disallowed-characters`, trims the result, and replaces spaces with hyphens. Lowercases first when `$lowercase` is `true`.
+Escapes `$disallowed-characters` (so the result is safe to use as a CSS identifier without losing them), trims the result, and replaces spaces with hyphens. Lowercases first when `$lowercase` is `true`.
 
 ```scss
-s.sanitize('Hello World!')                          // → 'Hello-World'
-s.sanitize('Font Size (lg)', $lowercase: true)      // → 'font-size-lg'
-s.sanitize('a_b c', $disallowed-characters: '_')    // → 'ab-c'
+s.to-ident('Hello World!')                          // → 'Hello-World\!'
+s.to-ident('Font Size (lg)', $lowercase: true)      // → 'font-size-\(lg\)'
+s.to-ident('a_b c', $disallowed-characters: '_')    // → 'a\_b-c'
 ```
 
 ### `split($string, $separator: null)`
@@ -293,7 +293,7 @@ s.upper-snake-case('my variable')  // → 'MY_VARIABLE'
 ### v1 → v2
 
 - Minimum `sass` / `sass-embedded` version raised from `1.33.0` to `1.45.0`
-- `slugify()` removed — use `sanitize($string, $lowercase: true)`, which also removes backslashes
+- `slugify()` removed — use `to-ident($string, $lowercase: true)`, which escapes backslashes rather than removing them
 - `sort()` now preserves the input list's separator (previously returned a space-separated list for 2+ items)
 
 ---

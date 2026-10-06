@@ -4,7 +4,7 @@
 
 // CONFIG ──────────────────────────────────────────────────
 
-// Sanitize disallowed characters
+// Characters escaped when building a CSS identifier
 $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
 
 // PUBLIC API ──────────────────────────────────────────────
@@ -56,12 +56,13 @@ $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
   @return $string;
 }
 
-/// Remove $disallowed-characters from $string, trim it and replace spaces with hyphens
+/// Escape $disallowed-characters in $string so it's safe as a CSS identifier, trim it and
+/// replace spaces with hyphens
 /// @param {String} $string - Input string
-/// @param {Bool} $lowercase [false] - Lowercase $string before filtering when `true`
-/// @param {String} $disallowed-characters [$DISALLOWED_CHARACTERS] - Characters to remove
-/// @return {String} Sanitized string
-@function sanitize(
+/// @param {Bool} $lowercase [false] - Lowercase $string before escaping when `true`
+/// @param {String} $disallowed-characters [$DISALLOWED_CHARACTERS] - Characters to escape
+/// @return {String} String safe to use as a CSS identifier
+@function to-ident(
   $string,
   $lowercase: false,
   $disallowed-characters: $DISALLOWED_CHARACTERS
@@ -77,10 +78,12 @@ $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
   $string: $lowercase and string.to-lower-case($string) or $string;
   $result: '';
 
-  // Keep only allowed characters
+  // Escape disallowed characters instead of removing them
   @for $i from 1 through string.length($string) {
     $character: string.slice($string, $i, $i);
-    @if not string.index($disallowed-characters, $character) {
+    @if string.index($disallowed-characters, $character) {
+      $result: $result + '\\' + $character;
+    } @else {
       $result: $result + $character;
     }
   }
