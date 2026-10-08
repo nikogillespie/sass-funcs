@@ -4,8 +4,8 @@
 
 // CONFIG ──────────────────────────────────────────────────
 
-// Characters escaped when building a CSS identifier
-$DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
+// Characters escaped when writing a CSS identifier
+$ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
 
 // PUBLIC API ──────────────────────────────────────────────
 
@@ -23,6 +23,51 @@ $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
   $first: string.slice($string, 1, 1);
   $rest: string.slice($string, 2);
   @return string.to-upper-case($first) + string.to-lower-case($rest);
+}
+
+/// Escape $escaped-characters in $string with a backslash so it is safe to write as a CSS
+/// identifier. Lossless: the characters are kept, CSS reads them back
+/// @param {String} $string - Input string
+/// @param {String} $escaped-characters [$ESCAPED_CHARACTERS] - Characters to escape
+/// @return {String} String safe to write as a CSS identifier
+@function escape($string, $escaped-characters: $ESCAPED_CHARACTERS) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  } @else if meta.type-of($escaped-characters) != 'string' {
+    @error '$escaped-characters: #{meta.inspect($escaped-characters)} is not a string.';
+  }
+
+  // Return early — `1 through 0` would iterate twice, and index() matches an empty slice
+  @if string.length($string) == 0 {
+    @return $string;
+  }
+
+  $result: '';
+  @for $i from 1 through string.length($string) {
+    $character: string.slice($string, $i, $i);
+    @if string.index($escaped-characters, $character) {
+      $result: $result + '\\' + $character;
+    } @else {
+      $result: $result + $character;
+    }
+  }
+  @return $result;
+}
+
+/// Normalize $string into a key: trim it, replace spaces with hyphens, and lowercase it when
+/// $lowercase is `true`. Lossy: this is what two keys must share to be the same key
+/// @param {String} $string - Input string
+/// @param {Bool} $lowercase [false] - Lowercase $string when `true`
+/// @return {String} Normalized key
+@function normalize($string, $lowercase: false) {
+  @if meta.type-of($string) != 'string' {
+    @error '$string: #{meta.inspect($string)} is not a string.';
+  } @else if meta.type-of($lowercase) != 'bool' {
+    @error '$lowercase: #{meta.inspect($lowercase)} is not a bool.';
+  }
+
+  $string: $lowercase and string.to-lower-case($string) or $string;
+  @return replace-all(trim($string), ' ', '-');
 }
 
 /// Replace all occurrences of $pattern with $replacement in $string
@@ -54,41 +99,6 @@ $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
       );
   }
   @return $string;
-}
-
-/// Escape $disallowed-characters in $string so it's safe as a CSS identifier, trim it and
-/// replace spaces with hyphens
-/// @param {String} $string - Input string
-/// @param {Bool} $lowercase [false] - Lowercase $string before escaping when `true`
-/// @param {String} $disallowed-characters [$DISALLOWED_CHARACTERS] - Characters to escape
-/// @return {String} String safe to use as a CSS identifier
-@function to-ident(
-  $string,
-  $lowercase: false,
-  $disallowed-characters: $DISALLOWED_CHARACTERS
-) {
-  @if meta.type-of($string) != 'string' {
-    @error '$string: #{meta.inspect($string)} is not a string.';
-  } @else if meta.type-of($lowercase) != 'bool' {
-    @error '$lowercase: #{meta.inspect($lowercase)} is not a bool.';
-  } @else if meta.type-of($disallowed-characters) != 'string' {
-    @error '$disallowed-characters: #{meta.inspect($disallowed-characters)} is not a string.';
-  }
-
-  $string: $lowercase and string.to-lower-case($string) or $string;
-  $result: '';
-
-  // Escape disallowed characters instead of removing them
-  @for $i from 1 through string.length($string) {
-    $character: string.slice($string, $i, $i);
-    @if string.index($disallowed-characters, $character) {
-      $result: $result + '\\' + $character;
-    } @else {
-      $result: $result + $character;
-    }
-  }
-
-  @return replace-all(trim($result), ' ', '-');
 }
 
 /// Split $string into a list using $separator

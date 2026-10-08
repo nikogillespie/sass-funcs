@@ -20,13 +20,13 @@ All constants are configurable via `@use ... with (...)`:
 
 ```scss
 @use 'sass-funcs/string' as s with (
-  $DISALLOWED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~_'
+  $ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~_'
 );
 ```
 
-| Variable                 | Module   | Default                                   | Description                        |
-| ------------------------ | -------- | ----------------------------------------- | ---------------------------------- |
-| `$DISALLOWED_CHARACTERS` | `string` | `` '!"#$%&\'()*+,./:;<=>?@[\\]^`{\|}~' `` | Characters escaped by `to-ident()` |
+| Variable              | Module   | Default                                   | Description                      |
+| --------------------- | -------- | ----------------------------------------- | -------------------------------- |
+| `$ESCAPED_CHARACTERS` | `string` | `` '!"#$%&\'()*+,./:;<=>?@[\\]^`{\|}~' `` | Characters escaped by `escape()` |
 
 > **Note:** A module can only be configured on its first load. Packages such as [`sass-error`](https://www.npmjs.com/package/sass-error) and [`sass-valid`](https://www.npmjs.com/package/sass-valid) load `sass-funcs/string` themselves, so place your `@use ... with (...)` before them.
 
@@ -238,6 +238,26 @@ s.capitalize('hello world')   // → 'Hello world'
 s.capitalize('HELLO')         // → 'Hello'
 ```
 
+### `escape($string, $escaped-characters: $ESCAPED_CHARACTERS)`
+
+Puts a backslash before each of `$escaped-characters`, so the string is safe to write as a CSS identifier without losing them. Lossless: CSS reads the characters back. Similar to `CSS.escape(string)`.
+
+```scss
+s.escape('Hello World!')       // → 'Hello World\!'
+s.escape('Font Size (lg)')     // → 'Font Size \(lg\)'
+s.escape('a_b', '_')           // → 'a\_b'
+s.escape('')                   // → ''
+```
+
+### `normalize($string, $lowercase: false)`
+
+Trims `$string` and replaces spaces with hyphens; lowercases it first when `$lowercase` is `true`. Lossy: use it for keys that must match, then `escape()` when writing them as CSS.
+
+```scss
+s.normalize('  Font Size  ')                    // → 'Font-Size'
+s.normalize('  Font Size  ', $lowercase: true)  // → 'font-size'
+```
+
 ### `replace-all($string, $pattern, $replacement: '')`
 
 Replaces every occurrence of `$pattern` in `$string` with `$replacement`. Defaults to deletion if `$replacement` is omitted. Similar to `String.prototype.replaceAll(pattern, replacement)`.
@@ -245,16 +265,6 @@ Replaces every occurrence of `$pattern` in `$string` with `$replacement`. Defaul
 ```scss
 s.replace-all('foo bar foo', 'foo', 'baz')   // → 'baz bar baz'
 s.replace-all('a--b--c', '--')               // → 'abc'
-```
-
-### `to-ident($string, $lowercase: false, $disallowed-characters: $DISALLOWED_CHARACTERS)`
-
-Escapes `$disallowed-characters` (so the result is safe to use as a CSS identifier without losing them), trims the result, and replaces spaces with hyphens. Lowercases first when `$lowercase` is `true`.
-
-```scss
-s.to-ident('Hello World!')                          // → 'Hello-World\!'
-s.to-ident('Font Size (lg)', $lowercase: true)      // → 'font-size-\(lg\)'
-s.to-ident('a_b c', $disallowed-characters: '_')    // → 'a\_b-c'
 ```
 
 ### `split($string, $separator: null)`
@@ -293,7 +303,7 @@ s.upper-snake-case('my variable')  // → 'MY_VARIABLE'
 ### v1 → v2
 
 - Minimum `sass` / `sass-embedded` version raised from `1.33.0` to `1.45.0`
-- `slugify()` removed — use `to-ident($string, $lowercase: true)`, which escapes backslashes rather than removing them
+- `slugify()` removed — use `normalize($string, $lowercase: true)` for the key and `escape()` when writing it as CSS
 - `sort()` now preserves the input list's separator (previously returned a space-separated list for 2+ items)
 
 ---
