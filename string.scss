@@ -37,21 +37,28 @@ $ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
     @error '$escaped-characters: #{meta.inspect($escaped-characters)} is not a string.';
   }
 
+  $length: string.length($string);
+
   // Return early — `1 through 0` would iterate twice, and index() matches an empty slice
-  @if string.length($string) == 0 {
+  @if $length == 0 {
     @return $string;
   }
 
+  // Copy the characters between two escaped ones as one slice
   $result: '';
-  @for $i from 1 through string.length($string) {
+  $start: 1;
+  @for $i from 1 through $length {
     $character: string.slice($string, $i, $i);
     @if string.index($escaped-characters, $character) {
-      $result: $result + '\\' + $character;
-    } @else {
-      $result: $result + $character;
+      $result: $result + string.slice($string, $start, $i - 1) + '\\' + $character;
+      $start: $i + 1;
     }
   }
-  @return $result;
+
+  @if $start == 1 {
+    @return $string;
+  }
+  @return $result + string.slice($string, $start);
 }
 
 /// Normalize $string into a key: trim it, replace spaces with hyphens, and lowercase it when
@@ -67,6 +74,11 @@ $ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
   }
 
   $string: $lowercase and string.to-lower-case($string) or $string;
+
+  // Return early — without a space there is nothing to trim or replace
+  @if not string.index($string, ' ') {
+    @return $string;
+  }
   @return replace-all(trim($string), ' ', '-');
 }
 
