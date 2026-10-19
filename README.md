@@ -14,24 +14,6 @@ npm install sass-funcs
 
 ---
 
-## Configuration
-
-All constants are configurable via `@use ... with (...)`:
-
-```scss
-@use 'sass-funcs/string' as s with (
-  $ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~_'
-);
-```
-
-| Variable              | Module   | Default                                   | Description                      |
-| --------------------- | -------- | ----------------------------------------- | -------------------------------- |
-| `$ESCAPED_CHARACTERS` | `string` | `` '!"#$%&\'()*+,./:;<=>?@[\\]^`{\|}~' `` | Characters escaped by `escape()` |
-
-> **Note:** A module can only be configured on its first load. Packages such as [`sass-error`](https://www.npmjs.com/package/sass-error) and [`sass-valid`](https://www.npmjs.com/package/sass-valid) load `sass-funcs/string` themselves, so place your `@use ... with (...)` before them.
-
----
-
 ## Modules
 
 | Module                     | Import path         | Description                                              |
@@ -238,14 +220,14 @@ s.capitalize('hello world')   // → 'Hello world'
 s.capitalize('HELLO')         // → 'Hello'
 ```
 
-### `escape($string, $escaped-characters: $ESCAPED_CHARACTERS)`
+### `escape($string)`
 
-Puts a backslash before each of `$escaped-characters`, so the string is safe to write as a CSS identifier without losing them. Lossless: CSS reads the characters back. Similar to `CSS.escape(string)`.
+Escapes what a CSS identifier can't contain, so the string is safe to write as one without losing characters: a backslash before the space and ASCII punctuation (all but `-` and `_`), and the hex code point for control characters (U+0001–U+001F, U+007F). A leading digit is left to the caller. Lossless: CSS reads the characters back. Similar to `CSS.escape(string)`.
 
 ```scss
-s.escape('Hello World!')       // → 'Hello World\!'
-s.escape('Font Size (lg)')     // → 'Font Size \(lg\)'
-s.escape('a_b', '_')           // → 'a\_b'
+s.escape('Hello World!')       // → 'Hello\ World\!'
+s.escape('Font Size (lg)')     // → 'Font\ Size\ \(lg\)'
+s.escape('a\9 b')              // → 'a\9 b' (a tab)
 s.escape('')                   // → ''
 ```
 

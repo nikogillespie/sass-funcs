@@ -1,11 +1,58 @@
 @use 'sass:meta';
 @use 'sass:string';
 @use 'sass:list';
+@use 'sass:map';
 
 // CONFIG ──────────────────────────────────────────────────
 
-// Characters escaped when writing a CSS identifier
-$ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
+// Escaped with a backslash, as CSS requires (not config):
+// the space and ASCII punctuation but - and _
+$_ESCAPE_CHARACTERS: ' !"#$%&\'()*+,./:;<=>?@[\\]^`{|}~';
+
+// Escaped as hex: control characters, which CSS accepts
+// neither raw nor after a backslash
+$_ESCAPE_CONTROL_CHARACTERS: (
+  '\1': '\\1 ',
+  '\2': '\\2 ',
+  '\3': '\\3 ',
+  '\4': '\\4 ',
+  '\5': '\\5 ',
+  '\6': '\\6 ',
+  '\7': '\\7 ',
+  '\8': '\\8 ',
+  '\9': '\\9 ',
+  '\a': '\\a ',
+  '\b': '\\b ',
+  '\c': '\\c ',
+  '\d': '\\d ',
+  '\e': '\\e ',
+  '\f': '\\f ',
+  '\10': '\\10 ',
+  '\11': '\\11 ',
+  '\12': '\\12 ',
+  '\13': '\\13 ',
+  '\14': '\\14 ',
+  '\15': '\\15 ',
+  '\16': '\\16 ',
+  '\17': '\\17 ',
+  '\18': '\\18 ',
+  '\19': '\\19 ',
+  '\1a': '\\1a ',
+  '\1b': '\\1b ',
+  '\1c': '\\1c ',
+  '\1d': '\\1d ',
+  '\1e': '\\1e ',
+  '\1f': '\\1f ',
+  '\7f': '\\7f ',
+);
+
+// DERIVED ─────────────────────────────────────────────────
+
+// Every character escape() escapes
+$_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
+@each $character, $_ in $_ESCAPE_CONTROL_CHARACTERS {
+  $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_ALL_CHARACTERS + $character;
+}
 
 // PUBLIC API ──────────────────────────────────────────────
 
@@ -25,16 +72,14 @@ $ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
   @return string.to-upper-case($first) + string.to-lower-case($rest);
 }
 
-/// Escape $escaped-characters in $string with a backslash so it is safe to write as a CSS
-/// identifier. Lossless: the characters are kept, CSS reads them back
+/// Escape what a CSS identifier can't contain: the space and ASCII punctuation with a backslash,
+/// control characters as hex code points. A leading digit is left to the caller. Lossless: the
+/// characters are kept, CSS reads them back
 /// @param {String} $string - Input string
-/// @param {String} $escaped-characters [$ESCAPED_CHARACTERS] - Characters to escape
 /// @return {String} String safe to write as a CSS identifier
-@function escape($string, $escaped-characters: $ESCAPED_CHARACTERS) {
+@function escape($string) {
   @if meta.type-of($string) != 'string' {
     @error '$string: #{meta.inspect($string)} is not a string.';
-  } @else if meta.type-of($escaped-characters) != 'string' {
-    @error '$escaped-characters: #{meta.inspect($escaped-characters)} is not a string.';
   }
 
   $length: string.length($string);
@@ -49,8 +94,9 @@ $ESCAPED_CHARACTERS: '!"#$%&\'()*+,./:;<=>?@[\\]^`{|}~' !default;
   $start: 1;
   @for $i from 1 through $length {
     $character: string.slice($string, $i, $i);
-    @if string.index($escaped-characters, $character) {
-      $result: $result + string.slice($string, $start, $i - 1) + '\\' + $character;
+    @if string.index($_ESCAPE_ALL_CHARACTERS, $character) {
+      $escape: map.get($_ESCAPE_CONTROL_CHARACTERS, $character) or '\\' + $character;
+      $result: $result + string.slice($string, $start, $i - 1) + $escape;
       $start: $i + 1;
     }
   }
