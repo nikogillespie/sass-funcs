@@ -153,7 +153,7 @@ m.type-of((a: 1))      // → 'map'
 @use 'sass-funcs/number' as n;
 ```
 
-### `$SUPPORTED_LENGTH_UNITS`
+### `$LENGTH_UNITS`
 
 A list of the CSS length units supported by `add-unit` and `convert-unit`:
 

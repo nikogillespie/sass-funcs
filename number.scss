@@ -34,13 +34,13 @@ $_LENGTH_UNIT_FACTORS: (
 // DERIVED ─────────────────────────────────────────────────
 
 // Expose supported units publicly
-$SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
+$LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
 
 // PUBLIC API ──────────────────────────────────────────────
 
 /// Attach a CSS length unit to $number
 /// @param {Number} $number - Unitless number
-/// @param {String} $unit - Target unit; see `$SUPPORTED_LENGTH_UNITS`
+/// @param {String} $unit - Target unit; see `$LENGTH_UNITS`
 /// @return {Number} Number with the specified unit attached
 @function add-unit($number, $unit) {
   @if meta.type-of($number) != 'number' {
@@ -58,8 +58,8 @@ $SUPPORTED_LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
 
 /// Convert $number from one CSS length unit to another
 /// @param {Number} $number - Unitless number, or a number whose unit matches $from-unit
-/// @param {String} $from-unit - Source unit; see `$SUPPORTED_LENGTH_UNITS`
-/// @param {String} $to-unit - Target unit; see `$SUPPORTED_LENGTH_UNITS`
+/// @param {String} $from-unit - Source unit; see `$LENGTH_UNITS`
+/// @param {String} $to-unit - Target unit; see `$LENGTH_UNITS`
 /// @return {Number} Converted number with the target unit attached
 @function convert-unit($number, $from-unit, $to-unit) {
   @if meta.type-of($number) != 'number' {
