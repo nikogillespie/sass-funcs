@@ -4,7 +4,7 @@
 
 // CONFIG ──────────────────────────────────────────────────
 
-// Pixel ratios per supported length unit — conversion pivot
+// Pixels per unit: the pivot for conversions
 $_LENGTH_UNIT_PX_RATIOS: (
   'px': 1,
   'rem': 16,
@@ -17,8 +17,8 @@ $_LENGTH_UNIT_PX_RATIOS: (
   'pt': math.div(96, 72),
 );
 
-// Unit factors for attaching units by multiplication
-// Keys must mirror $_LENGTH_UNIT_PX_RATIOS
+// One of each unit, attached by multiplication: 2 * 1rem → 2rem
+// The same keys as $_LENGTH_UNIT_PX_RATIOS
 $_LENGTH_UNIT_FACTORS: (
   'px': 1px,
   'rem': 1rem,
@@ -33,7 +33,6 @@ $_LENGTH_UNIT_FACTORS: (
 
 // DERIVED ─────────────────────────────────────────────────
 
-// Expose supported units publicly
 $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
 
 // PUBLIC API ──────────────────────────────────────────────
@@ -72,8 +71,7 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @error '$from-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
   } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $to-unit) {
     @error '$to-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
-  } @else if not math.is-unitless($number) and math.unit($number) != $from-unit
-  {
+  } @else if not math.is-unitless($number) and math.unit($number) != $from-unit {
     @error '$number: Must be unitless or use unit "#{$from-unit}".';
   }
 
@@ -81,7 +79,8 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @return $number;
   }
 
-  $n: math.div($number, $number * 0 + 1); // Strip unit
+  $n: math.div($number, $number * 0 + 1); // 16px → 16
+  // 16 px to rem: 16 * 1 / 16 → 1
   $result: math.div(
     $n * map.get($_LENGTH_UNIT_PX_RATIOS, $from-unit),
     map.get($_LENGTH_UNIT_PX_RATIOS, $to-unit)
@@ -101,16 +100,15 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @error '$length: #{meta.inspect($length)} is not a number.';
   }
 
-  // Snap fractional inputs to the nearest whole position
-  $index: math.round($index);
+  $index: math.round($index); // 1.6 → 2
 
-  // Translate negative indices from the end of the range
   @if $index < 0 {
+    // -1 of 5 → 5
     $index: $length + $index + 1;
   }
 
-  // Signal out-of-bounds with null rather than throwing
   @if $index < 1 or $index > $length {
+    // 0 or 6 of 5 → null
     @return null;
   } @else {
     @return $index;

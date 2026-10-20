@@ -20,7 +20,7 @@
   @return list.index($types, meta.type-of($value)) != null;
 }
 
-/// Check whether $value is empty — pass $depth > 0 to also inspect nested structures
+/// Check whether $value is empty; with $depth, whether anything inside it is
 /// @param {*} $value - Value to check
 /// @param {Number | Null} $depth [0] - Recursion depth; 0 = shallow only, null = unlimited
 /// @return {Bool} `true` if empty at the given depth, `false` otherwise
@@ -31,38 +31,32 @@
 
   $type: meta.type-of($value);
 
-  // Check shallow emptiness
+  // null, '  ', () and an empty map
   @if $value == null {
     @return true;
   } @else if $type == 'string' and s.trim($value) == '' {
     @return true;
-  } @else if list.index(('list', 'arglist'), $type) and list.length($value) == 0
-  {
+  } @else if list.index(('list', 'arglist'), $type) and list.length($value) == 0 {
     @return true;
   } @else if $type == 'map' and list.length(map.keys($value)) == 0 {
     @return true;
   }
 
-  // Stop at depth 0 — value passed shallow checks
   @if $depth == 0 {
     @return false;
   }
 
-  // Decrement depth — null carries unlimited recursion
-  $next-depth: null;
-  @if $depth != null {
-    $next-depth: $depth - 1;
-  }
+  $next-depth: $depth and $depth - 1; // null: unlimited
 
   @if list.index(('list', 'arglist'), $type) {
-    // Recurse into list and arglist elements
+    // ('a', ''), depth 1 → empty
     @each $element in $value {
       @if is-empty($element, $next-depth) {
         @return true;
       }
     }
   } @else if $type == 'map' {
-    // Recurse into map keys and values
+    // (a: ''), depth 1 → empty
     @each $k, $v in $value {
       @if is-empty($k, $next-depth) or is-empty($v, $next-depth) {
         @return true;

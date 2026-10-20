@@ -56,13 +56,14 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
 
 // PUBLIC API ──────────────────────────────────────────────
 
-/// Capitalize first letter of $string and lowercase the remainder
+/// Capitalize $string's first letter and lowercase the rest
 /// @param {String} $string - Input string
 /// @return {String} Capitalized string
 @function capitalize($string) {
   @if meta.type-of($string) != 'string' {
     @error '$string: #{meta.inspect($string)} is not a string.';
   }
+  // ' hello WORLD' → Hello world
   $string: trim($string);
   @if string.length($string) == 0 {
     @return '';
@@ -72,9 +73,8 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
   @return string.to-upper-case($first) + string.to-lower-case($rest);
 }
 
-/// Escape what a CSS identifier can't contain: the space and ASCII punctuation with a backslash,
-/// control characters as hex code points. A leading digit is left to the caller. Lossless: the
-/// characters are kept, CSS reads them back
+/// Escape what a CSS identifier can't hold: the space and ASCII punctuation with a backslash,
+/// control characters as hex; lossless, and a leading digit is left to the caller
 /// @param {String} $string - Input string
 /// @return {String} String safe to write as a CSS identifier
 @function escape($string) {
@@ -84,12 +84,12 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
 
   $length: string.length($string);
 
-  // Return early — `1 through 0` would iterate twice, and index() matches an empty slice
   @if $length == 0 {
+    // '' → '', which index() would match
     @return $string;
   }
 
-  // Copy the characters between two escaped ones as one slice
+  // 'a.b c' → a\.b\ c, the runs between escapes copied as slices
   $result: '';
   $start: 1;
   @for $i from 1 through $length {
@@ -102,13 +102,13 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
   }
 
   @if $start == 1 {
+    // Nothing escaped
     @return $string;
   }
   @return $result + string.slice($string, $start);
 }
 
-/// Normalize $string into a key: trim it, replace spaces with hyphens, and lowercase it when
-/// $lowercase is `true`. Lossy: this is what two keys must share to be the same key
+/// Normalize $string into a key: trimmed, spaces to hyphens, lowercased when $lowercase is true
 /// @param {String} $string - Input string
 /// @param {Bool} $lowercase [false] - Lowercase $string when `true`
 /// @return {String} Normalized key
@@ -121,10 +121,11 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
 
   $string: $lowercase and string.to-lower-case($string) or $string;
 
-  // Return early — without a space there is nothing to trim or replace
   @if not string.index($string, ' ') {
+    // No space: nothing to trim or replace
     @return $string;
   }
+  // ' Heading One ' → Heading-One
   @return replace-all(trim($string), ' ', '-');
 }
 
@@ -142,8 +143,8 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
     @error '$replacement: #{meta.inspect($replacement)} is not a string.';
   }
 
-  // Guard empty pattern — would recurse infinitely
   @if $pattern == '' {
+    // '' would recurse forever
     @return $string;
   }
 
@@ -168,8 +169,8 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
     @error '$string: #{meta.inspect($string)} is not a string.';
   }
 
-  // Wrap string in a single-element list
   @if $separator == null {
+    // a → (a)
     @return list.append((), $string, space);
   }
   @if meta.type-of($separator) != 'string' {
@@ -178,8 +179,8 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
 
   $result: ();
 
-  // Split into individual characters
   @if $separator == '' {
+    // abc, '' → (a, b, c)
     @for $i from 1 through string.length($string) {
       $result: list.append($result, string.slice($string, $i, $i), comma);
     }
@@ -189,7 +190,7 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
   $sep-length: string.length($separator);
   $index: string.index($string, $separator);
 
-  // Slice at each separator match
+  // a.b.c, '.' → (a, b, c)
   @while $index {
     $part: string.slice($string, 1, $index - 1);
     $result: list.append($result, $part, comma);
@@ -210,15 +211,14 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
 
   $end: string.length($string);
 
-  // Return early — nothing to trim
   @if $end == 0 {
     @return $string;
-  } @else if
-    (string.slice($string, 1, 1) != ' ') and
-    (string.slice($string, $end, $end) != ' ')
-  {
+  } @else if string.slice($string, 1, 1) != ' ' and string.slice($string, $end, $end) != ' ' {
+    // No space at either end
     @return $string;
   }
+
+  // '  a b  ' → 'a b'
 
   $start: 1;
   @while $start <= $end and string.slice($string, $start, $start) == ' ' {
@@ -238,6 +238,7 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
     @error '$string: #{meta.inspect($string)} is not a string.';
   }
 
+  // 'my-key name' → MY_KEY_NAME
   $string: trim($string);
   $result: replace-all($string, '-', '_');
   $result: replace-all($result, ' ', '_');

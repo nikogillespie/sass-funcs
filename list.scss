@@ -7,7 +7,7 @@
 
 /// Concatenate $lists into a single flat list
 /// @param {ArgList} $lists... - Zero or more lists to concatenate
-/// @return {List} Single flat list containing all elements
+/// @return {List} One list of every element
 @function concat($lists...) {
   $result: ();
   @each $list in $lists {
@@ -16,7 +16,7 @@
   @return $result;
 }
 
-/// Recursively flatten $list to $depth levels deep, or fully if null
+/// Flatten $list $depth levels deep, or fully
 /// @param {List | ArgList} $list - List to flatten
 /// @param {Number | Null} $depth [null] - Flattening depth; null = unlimited
 /// @return {List} Flattened list
@@ -27,8 +27,8 @@
     @error '$depth: #{meta.inspect($depth)} is not a number or null.';
   }
 
-  // Return the list as-is — depth limit reached
   @if $depth == 0 {
+    // Depth reached: the list as it is
     @return $list;
   }
 
@@ -37,19 +37,13 @@
     @if meta.type-of($element) != 'list' {
       $result: push($result, $element);
     } @else if $depth == 1 {
-      // Inline sub-list elements without recursing
+      // ((a, b), c), depth 1 → (a, b, c)
       @each $sub-element in $element {
         $result: push($result, $sub-element);
       }
     } @else {
-      // Recurse with decremented depth (null = unlimited)
-      $next-depth: null;
-      @if $depth == null {
-        $next-depth: null;
-      } @else {
-        $next-depth: $depth - 1;
-      }
-      $sub-list: flat($element, $next-depth);
+      // ((a, (b, c)), d), depth 2 → (a, b, c, d)
+      $sub-list: flat($element, $depth and $depth - 1);
       @each $sub-element in $sub-list {
         $result: push($result, $sub-element);
       }
@@ -69,8 +63,7 @@
 /// Serialize $list elements into a string with $separator between each
 /// @param {List | ArgList} $list - List to join
 /// @param {String} $separator [', '] - Separator placed between elements
-/// @return {String} Joined string; a single-element list returns that element
-///   as-is (original type, not stringified)
+/// @return {String} The joined string; one element is returned as it is
 @function join($list, $separator: ', ') {
   @if not list.index(('list', 'arglist'), meta.type-of($list)) {
     @error '$list: #{meta.inspect($list)} is not a list or arglist.';
@@ -100,8 +93,8 @@
     @error '$separator: Must be "space", "comma", "slash", or "auto".';
   }
 
-  // Force space on empty lists — avoids trailing comma
   @if list.length($list) == 0 {
+    // () → space-separated, so no trailing comma
     $separator: space;
   }
 
@@ -124,7 +117,7 @@
 
   $length: list.length($list);
 
-  // Default to full-list bounds when not specified
+  // null → 1 and the length
   @if $start == null {
     $start: 1;
   }
@@ -132,7 +125,7 @@
     $end: $length;
   }
 
-  // Clamp bounds to the valid index range of the list
+  // (a, b, c), 0 to 9 → 1 to 3
   $start: math.round(math.max(1, math.min($start, $length)));
   @if $end < 1 {
     $end: 0;
@@ -140,8 +133,8 @@
     $end: math.round(math.min($end, $length));
   }
 
-  // Return empty list on inverted range
   @if $end < $start {
+    // 3 to 1 → ()
     @return ();
   }
 
@@ -168,35 +161,30 @@
     @return $list;
   }
 
-  // Character weights — unknown chars weigh 999, sort last
-  $chars: 'abcdefghijklmnopqrstuvwxyz-';
+  $chars: 'abcdefghijklmnopqrstuvwxyz-'; // Their order; any other character sorts last
 
-  // Pick the middle pivot — minimizes depth on sorted input
-  $pivot: list.nth($list, math.ceil(math.div($n, 2)));
+  $pivot: list.nth($list, math.ceil(math.div($n, 2))); // The middle one: shallow on sorted input
 
-  // Hoist pivot values — shared by every comparison
   $pivot-lower: string.to-lower-case('#{$pivot}');
   $pivot-len: string.length($pivot-lower);
   $pivot-is-number: meta.type-of($pivot) == 'number';
 
-  // Initialize 3-way partition buckets
   $less: ();
   $equal: ();
   $greater: ();
 
-  // Partition each item into exactly one bucket
+  // (b, a, c), pivot b → (a), (b), (c)
   @each $item in $list {
     @if $item == $pivot {
       $equal: list.append($equal, $item);
     } @else {
-      $is-less: null; // null = no decision yet
+      $is-less: null; // null: not decided yet
 
-      // Compare numbers by value — string coercion would
-      // give wrong order (e.g. '10' < '9')
       @if $pivot-is-number and meta.type-of($item) == 'number' {
+        // 9 < 10; as strings, '10' < '9'
         $is-less: $item < $pivot;
       } @else {
-        // Walk characters until a difference is found
+        // apple, apricot → p before r, at the third character
         $a: string.to-lower-case('#{$item}');
         $len-a: string.length($a);
         $min-len: math.min($len-a, $pivot-len);
@@ -206,14 +194,13 @@
           $ca: string.slice($a, $i, $i);
           $cb: string.slice($pivot-lower, $i, $i);
           @if $ca != $cb {
-            $is-less: (string.index($chars, $ca) or 999) <
-              (string.index($chars, $cb) or 999);
+            $is-less: (string.index($chars, $ca) or 999) < (string.index($chars, $cb) or 999);
           }
           $i: $i + 1;
         }
 
-        // Break ties by length — shorter string sorts first
         @if $is-less == null {
+          // ab before abc
           $is-less: $len-a < $pivot-len;
         }
       }
@@ -226,14 +213,14 @@
     }
   }
 
-  // Swap outer buckets for descending order
   @if $desc {
+    // Descending: greater first
     $swap: $less;
     $less: $greater;
     $greater: $swap;
   }
 
-  // Recurse on each partition, then join
+  // Sorted less, equal, sorted greater
   @return list.join(
     list.join(sort($less, $desc), $equal),
     sort($greater, $desc),
