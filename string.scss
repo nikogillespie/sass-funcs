@@ -5,12 +5,12 @@
 
 // CONFIG ──────────────────────────────────────────────────
 
-// Escaped with a backslash, as CSS requires (not config):
-// the space and ASCII punctuation but - and _
+// Characters escaped with a backslash
+// Space and ASCII punctuation, except - and _
 $_ESCAPE_CHARACTERS: ' !"#$%&\'()*+,./:;<=>?@[\\]^`{|}~';
 
-// Escaped as hex: control characters, which CSS accepts
-// neither raw nor after a backslash
+// Control characters escaped as hex
+// CSS accepts them neither raw nor after a backslash
 $_ESCAPE_CONTROL_CHARACTERS: (
   '\1': '\\1 ',
   '\2': '\\2 ',
