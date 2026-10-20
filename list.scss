@@ -145,7 +145,7 @@
   @return $result;
 }
 
-/// Sort $list alphabetically — case-insensitive; numbers sort by value
+/// Sort $list: alphabetically, ignoring case; numbers by value
 /// @param {List | ArgList} $list - List to sort
 /// @param {Bool} $desc [false] - Sort in descending order when `true`
 /// @return {List} Sorted list

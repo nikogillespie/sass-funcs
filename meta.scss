@@ -7,7 +7,7 @@
 
 /// Return the Sass type name of $value
 /// @param {*} $value - Any Sass value
-/// @return {String} Type name, e.g. `'number'`, `'string'`, `'map'`, `'list'`
+/// @return {String} The type name: `'number'`, `'string'`, `'map'`, `'list'`…
 @function type-of($value) {
   @return meta.type-of($value);
 }
