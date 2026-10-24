@@ -1,6 +1,7 @@
 @use 'sass:meta';
 @use 'sass:list';
 @use 'sass:map';
+@use 'sass:string';
 @use './string' as s;
 
 // PUBLIC API ──────────────────────────────────────────────
@@ -29,16 +30,20 @@
     @error '$depth: #{meta.inspect($depth)} is not a number or null.';
   }
 
-  $type: meta.type-of($value);
-
-  // null, '  ', () and an empty map
   @if $value == null {
     @return true;
-  } @else if $type == 'string' and s.trim($value) == '' {
-    @return true;
-  } @else if list.index(('list', 'arglist'), $type) and list.length($value) == 0 {
-    @return true;
-  } @else if $type == 'map' and list.length(map.keys($value)) == 0 {
+  }
+
+  $type: meta.type-of($value);
+
+  @if $type == 'string' {
+    // '', '  ' → empty; no leading space: nothing to trim
+    @return $value == '' or (string.index($value, ' ') == 1 and s.trim($value) == '');
+  } @else if $type != 'list' and $type != 'arglist' and $type != 'map' {
+    // 0, false, red → not empty
+    @return false;
+  } @else if ($type == 'map' and $value == ()) or ($type != 'map' and list.length($value) == 0) {
+    // (), an empty map or arglist → empty; an arglist never equals ()
     @return true;
   }
 

@@ -89,7 +89,7 @@
 /// @return {List} New list with $val appended
 @function push($list, $val, $separator: comma) {
   $allowed-separators: (comma, space, slash, auto);
-  @if list.index($allowed-separators, $separator) == null {
+  @if $separator != comma and list.index($allowed-separators, $separator) == null {
     @error '$separator: Must be "space", "comma", "slash", or "auto".';
   }
 
