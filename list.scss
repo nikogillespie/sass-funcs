@@ -198,9 +198,8 @@
           $item-character: string.slice($item-lower, $i, $i);
           $pivot-character: string.slice($pivot-lower, $i, $i);
           @if $item-character != $pivot-character {
-            $item-rank: string.index($character-order, $item-character) or 999;
-            $pivot-rank: string.index($character-order, $pivot-character) or 999;
-            $is-less: $item-rank < $pivot-rank;
+            $is-less: (string.index($character-order, $item-character) or 999) <
+              (string.index($character-order, $pivot-character) or 999);
           }
           $i: $i + 1;
         }

@@ -79,10 +79,10 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
     @return $number;
   }
 
-  $n: math.div($number, $number * 0 + 1); // 16px → 16
+  $unitless-number: math.div($number, $number * 0 + 1); // 16px → 16
   // 16 px to rem: 16 * 1 / 16 → 1
   $result: math.div(
-    $n * map.get($_LENGTH_UNIT_PX_RATIOS, $from-unit),
+    $unitless-number * map.get($_LENGTH_UNIT_PX_RATIOS, $from-unit),
     map.get($_LENGTH_UNIT_PX_RATIOS, $to-unit)
   );
 
