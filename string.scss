@@ -181,7 +181,7 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
 
   @if $separator == '' {
     // abc, '' → (a, b, c)
-    @for $i from 1 through string.length($string) {
+    @for $i from 1 to string.length($string) + 1 {
       $result: list.append($result, string.slice($string, $i, $i), comma);
     }
     @return $result;

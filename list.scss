@@ -72,9 +72,12 @@
   }
 
   $result: '';
+  $is-first: true;
   @each $element in $list {
-    @if $result == '' {
+    @if $is-first {
+      // ('', a) → ', a': an empty first element keeps its place
       $result: $element;
+      $is-first: false;
     } @else {
       $result: $result + $separator + $element;
     }
@@ -125,8 +128,8 @@
     $end: $length;
   }
 
-  // (a, b, c), 0 to 9 → 1 to 3
-  $start: math.round(math.max(1, math.min($start, $length)));
+  // (a, b, c), 0 to 9 → 1 to 3; 4 to 9 → ()
+  $start: math.round(math.max(1, $start));
   @if $end < 1 {
     $end: 0;
   } @else {
