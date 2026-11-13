@@ -62,8 +62,8 @@
     }
   } @else if $type == 'map' {
     // (a: ''), depth 1 → empty
-    @each $k, $v in $value {
-      @if is-empty($k, $next-depth) or is-empty($v, $next-depth) {
+    @each $entry-key, $entry-value in $value {
+      @if is-empty($entry-key, $next-depth) or is-empty($entry-value, $next-depth) {
         @return true;
       }
     }

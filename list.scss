@@ -85,12 +85,12 @@
   @return $result;
 }
 
-/// Append $val to the end of $list
+/// Append $value to the end of $list
 /// @param {List} $list - List to append to
-/// @param {*} $val - Value to append
+/// @param {*} $value - Value to append
 /// @param {String} $separator [comma] - List separator: `comma`, `space`, `slash`, or `auto`
-/// @return {List} New list with $val appended
-@function push($list, $val, $separator: comma) {
+/// @return {List} New list with $value appended
+@function push($list, $value, $separator: comma) {
   $allowed-separators: (comma, space, slash, auto);
   @if $separator != comma and list.index($allowed-separators, $separator) == null {
     @error '$separator: Must be "space", "comma", "slash", or "auto".';
@@ -101,7 +101,7 @@
     $separator: space;
   }
 
-  @return list.append($list, $val, $separator: $separator);
+  @return list.append($list, $value, $separator: $separator);
 }
 
 /// Return the sublist of $list from $start to $end (1-based, inclusive)
@@ -150,26 +150,27 @@
 
 /// Sort $list: alphabetically, ignoring case; numbers by value
 /// @param {List | ArgList} $list - List to sort
-/// @param {Bool} $desc [false] - Sort in descending order when `true`
+/// @param {Bool} $descending [false] - Sort in descending order when `true`
 /// @return {List} Sorted list
-@function sort($list, $desc: false) {
+@function sort($list, $descending: false) {
   @if not list.index(('list', 'arglist'), meta.type-of($list)) {
     @error '$list: #{meta.inspect($list)} is not a list or arglist.';
-  } @else if meta.type-of($desc) != 'bool' {
-    @error '$desc: #{meta.inspect($desc)} is not a bool.';
+  } @else if meta.type-of($descending) != 'bool' {
+    @error '$descending: #{meta.inspect($descending)} is not a bool.';
   }
 
-  $n: list.length($list);
-  @if $n <= 1 {
+  $length: list.length($list);
+  @if $length <= 1 {
     @return $list;
   }
 
-  $chars: 'abcdefghijklmnopqrstuvwxyz-'; // Their order; any other character sorts last
+  $character-order: 'abcdefghijklmnopqrstuvwxyz-'; // Any other character sorts last
 
-  $pivot: list.nth($list, math.ceil(math.div($n, 2))); // The middle one: shallow on sorted input
+  // The middle one: shallow on sorted input
+  $pivot: list.nth($list, math.ceil(math.div($length, 2)));
 
   $pivot-lower: string.to-lower-case('#{$pivot}');
-  $pivot-len: string.length($pivot-lower);
+  $pivot-length: string.length($pivot-lower);
   $pivot-is-number: meta.type-of($pivot) == 'number';
 
   $less: ();
@@ -188,23 +189,25 @@
         $is-less: $item < $pivot;
       } @else {
         // apple, apricot → p before r, at the third character
-        $a: string.to-lower-case('#{$item}');
-        $len-a: string.length($a);
-        $min-len: math.min($len-a, $pivot-len);
+        $item-lower: string.to-lower-case('#{$item}');
+        $item-length: string.length($item-lower);
+        $min-length: math.min($item-length, $pivot-length);
         $i: 1;
 
-        @while $i <= $min-len and $is-less == null {
-          $ca: string.slice($a, $i, $i);
-          $cb: string.slice($pivot-lower, $i, $i);
-          @if $ca != $cb {
-            $is-less: (string.index($chars, $ca) or 999) < (string.index($chars, $cb) or 999);
+        @while $i <= $min-length and $is-less == null {
+          $item-character: string.slice($item-lower, $i, $i);
+          $pivot-character: string.slice($pivot-lower, $i, $i);
+          @if $item-character != $pivot-character {
+            $item-rank: string.index($character-order, $item-character) or 999;
+            $pivot-rank: string.index($character-order, $pivot-character) or 999;
+            $is-less: $item-rank < $pivot-rank;
           }
           $i: $i + 1;
         }
 
         @if $is-less == null {
           // ab before abc
-          $is-less: $len-a < $pivot-len;
+          $is-less: $item-length < $pivot-length;
         }
       }
 
@@ -216,7 +219,7 @@
     }
   }
 
-  @if $desc {
+  @if $descending {
     // Descending: greater first
     $swap: $less;
     $less: $greater;
@@ -225,8 +228,8 @@
 
   // Sorted less, equal, sorted greater
   @return list.join(
-    list.join(sort($less, $desc), $equal),
-    sort($greater, $desc),
+    list.join(sort($less, $descending), $equal),
+    sort($greater, $descending),
     list.separator($list)
   );
 }

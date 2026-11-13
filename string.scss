@@ -187,21 +187,21 @@ $_ESCAPE_ALL_CHARACTERS: $_ESCAPE_CHARACTERS;
     @return $result;
   }
 
-  $sep-length: string.length($separator);
+  $separator-length: string.length($separator);
   $index: string.index($string, $separator);
 
   // a.b.c, '.' → (a, b, c)
   @while $index {
     $part: string.slice($string, 1, $index - 1);
     $result: list.append($result, $part, comma);
-    $string: string.slice($string, $index + $sep-length);
+    $string: string.slice($string, $index + $separator-length);
     $index: string.index($string, $separator);
   }
 
   @return list.append($result, $string, comma);
 }
 
-/// Remove leading and trailing whitespace from $string
+/// Remove leading and trailing spaces from $string
 /// @param {String} $string - Input string
 /// @return {String} Trimmed string
 @function trim($string) {
