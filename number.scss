@@ -47,7 +47,7 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
   } @else if meta.type-of($unit) != 'string' {
     @error '$unit: #{meta.inspect($unit)} is not a string.';
   } @else if not math.is-unitless($number) {
-    @error '$number: #{meta.inspect($number)} is not a unitless number.';
+    @error '$number: Expected #{meta.inspect($number)} to have no units.';
   } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $unit) {
     @error '$unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
   }
@@ -72,7 +72,7 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
   } @else if not map.has-key($_LENGTH_UNIT_PX_RATIOS, $to-unit) {
     @error '$to-unit: Must be "px", "rem", "em", "cm", "mm", "Q", "in", "pc", or "pt".';
   } @else if not math.is-unitless($number) and math.unit($number) != $from-unit {
-    @error '$number: Must be unitless or use unit "#{$from-unit}".';
+    @error '$number: Expected #{meta.inspect($number)} to have unit "#{$from-unit}" or no units.';
   }
 
   @if $from-unit == $to-unit {
@@ -125,9 +125,9 @@ $LENGTH_UNITS: map.keys($_LENGTH_UNIT_PX_RATIOS);
   } @else if meta.type-of($digits) != 'number' {
     @error '$digits: #{meta.inspect($digits)} is not a number.';
   } @else if not math.is-unitless($digits) {
-    @error '$digits: #{meta.inspect($digits)} is not a unitless number.';
+    @error '$digits: Expected #{meta.inspect($digits)} to have no units.';
   } @else if $digits < 0 {
-    @error '$digits: Must be 0 or greater.';
+    @error '$digits: Must be 0 or greater, was #{meta.inspect($digits)}.';
   }
 
   $digits: math.floor($digits);
