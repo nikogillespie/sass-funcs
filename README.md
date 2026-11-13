@@ -71,9 +71,9 @@ l.join((a, b, c))          // → 'a, b, c'
 l.join((a, b, c), ' | ')   // → 'a | b | c'
 ```
 
-### `push($list, $val, $separator: comma)`
+### `push($list, $value, $separator: comma)`
 
-Appends `$val` to the end of `$list`. `$separator` controls the resulting list's separator: `comma`, `space`, `slash`, or `auto`. Similar to `Array.prototype.push(val)` — unlike JS, this returns a new list rather than mutating in place.
+Appends `$value` to the end of `$list`. `$separator` controls the resulting list's separator: `comma`, `space`, `slash`, or `auto`. Similar to `Array.prototype.push(value)` — unlike JS, this returns a new list rather than mutating in place.
 
 ```scss
 l.push((a, b), c)   // → a, b, c
@@ -81,25 +81,26 @@ l.push((a, b), c)   // → a, b, c
 
 ### `slice($list, $start: null, $end: null)`
 
-Returns the sublist from index `$start` to `$end` (1-based, inclusive). Omitting either bound defaults to the start or end of the list. Similar to `Array.prototype.slice(start, end)`.
+Returns the sublist from index `$start` to `$end` (1-based, inclusive). Omitting either bound defaults to the start or end of the list. A start past the end returns an empty list. Similar to `Array.prototype.slice(start, end)`.
 
 > **Index base and bounds differ:** Sass uses 1-based indices with an inclusive end; JS uses 0-based indices with an exclusive end. `slice(list, 2, 3)` returns elements 2 and 3; the JS equivalent would be `array.slice(1, 3)`.
 
 ```scss
 l.slice((a, b, c, d), 2, 3)   // → b, c
 l.slice((a, b, c, d), 3)       // → c, d
+l.slice((a, b, c, d), 5)       // → ()
 ```
 
-### `sort($list, $desc: false)`
+### `sort($list, $descending: false)`
 
-Sorts a list alphabetically (case-insensitive). Numbers sort by value. Pass `$desc: true` for descending order. Similar to `Array.prototype.sort()`.
+Sorts a list alphabetically (case-insensitive). Numbers sort by value. Pass `$descending: true` for descending order. Similar to `Array.prototype.sort()`.
 
 > **Intentional differences:** Numbers sort by value (JS sorts lexicographically by default, so `[10, 2, 1].sort()` → `[1, 10, 2]` in JS). Sorting is also case-insensitive; JS is case-sensitive by default.
 
 ```scss
-l.sort((c, a, b))               // → a, b, c
-l.sort((c, a, b), $desc: true)  // → c, b, a
-l.sort((3, 1, 2))               // → 1, 2, 3
+l.sort((c, a, b))                     // → a, b, c
+l.sort((c, a, b), $descending: true)  // → c, b, a
+l.sort((3, 1, 2))                     // → 1, 2, 3
 ```
 
 ---
@@ -119,7 +120,7 @@ Returns `true` if `$value` is empty. Covers `null`, blank strings, empty lists, 
 ```scss
 m.is-empty(null)                   // → true
 m.is-empty('')                     // → true
-m.is-empty('   ')                  // → true  (whitespace-only)
+m.is-empty('   ')                  // → true  (spaces only)
 m.is-empty(())                     // → true
 m.is-empty((a: ()))                // → false  (shallow)
 m.is-empty((a: ()), $depth: 1)     // → true   (checks nested)
@@ -257,11 +258,12 @@ Splits a string into a list using `$separator`. An empty string splits into indi
 s.split('a,b,c', ',')   // → a, b, c
 s.split('abc', '')       // → a, b, c
 s.split('abc')           // → 'abc'  (single-element list)
+s.split('', '')          // → ()
 ```
 
 ### `trim($string)`
 
-Removes leading and trailing whitespace. Similar to `String.prototype.trim()`.
+Removes leading and trailing spaces. Similar to `String.prototype.trim()`.
 
 > **Space characters only:** Strips the space character `' '`. JS strips all whitespace (`\t`, `\n`, `\r`, etc.) — Sass has no native regex equivalent for this.
 
@@ -287,6 +289,10 @@ s.upper-snake-case('my variable')  // → 'MY_VARIABLE'
 - Minimum `sass` / `sass-embedded` version raised from `1.33.0` to `1.45.0`
 - `slugify()` removed — use `normalize($string, $lowercase: true)` for the key and `escape()` when writing it as CSS
 - `sort()` now preserves the input list's separator (previously returned a space-separated list for 2+ items)
+- `$SUPPORTED_LENGTH_UNITS` renamed to `$LENGTH_UNITS`
+- `push()`'s `$val` renamed to `$value`; `sort()`'s `$desc` renamed to `$descending`
+- `slice()` returns `()` for a start past the end (previously the last element); `join()` keeps an empty first element; `split('', '')` returns `()`
+- Unit and range errors follow Sass's wording: `Expected 1em to have no units.`, `Must be 0 or greater, was -1.`
 
 ---
 
